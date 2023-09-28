@@ -5,7 +5,7 @@ import { GoogleLoginButton } from '@/components/google_login_button';
 
 const IndexPage: NextPage = function () {
   return (
-    <ServiceLayout title="test">
+    <ServiceLayout title="와글와글">
       <Box maxW="md" mx="auto">
         <img src="/main_logo.svg" alt="로고" />
         <Flex justify="center">

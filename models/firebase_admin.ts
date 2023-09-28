@@ -7,7 +7,7 @@ interface Config {
     projectId: string;
   };
 }
-
+//싱글톤 클래스
 export default class FirebaseAdmin {
   public static instance: FirebaseAdmin;
 
@@ -31,6 +31,7 @@ export default class FirebaseAdmin {
       return;
     }
     const config: Config = {
+      //인터페이스
       credential: {
         projectId: process.env.projectId || '',
         clientEmail: process.env.clientEmail || '',
