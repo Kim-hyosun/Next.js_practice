@@ -8,14 +8,14 @@ interface InAuthUserContext {
   /** 로그인 진행중인지 체크  */
   loading: boolean;
   signInWithGoogle: () => void;
-  sighOut: () => void;
+  signOut: () => void;
 }
 
 const AuthUserContext = createContext<InAuthUserContext>({
   authUser: null,
   loading: true,
   signInWithGoogle: async () => ({ user: null, credential: null }),
-  sighOut: () => {},
+  signOut: () => {},
 });
 
 export const AuthUserProvider = function ({ children }: { children: React.ReactNode }) {
