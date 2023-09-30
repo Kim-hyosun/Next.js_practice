@@ -13,12 +13,13 @@ import {
 } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import ResizeTextarea from 'react-textarea-autosize';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { ServiceLayout } from '@/components/service_layout';
 import { useAuth } from '@/contexts/auth_user.context';
 import { InAuthUser } from '@/models/in_auth_user';
 import MessageItem from '@/components/message_item';
+import { InMessage } from '@/models/message/in_message';
 
 interface Props {
   userInfo: InAuthUser | null;
@@ -71,9 +72,28 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
   const toast = useToast();
   const [isAnonymous, setAnonymous] = useState(true);
   const { authUser } = useAuth();
+  const [messageList, setMessageList] = useState<InMessage[]>([]);
+
+  async function fetchMessageList(uid: string) {
+    try {
+      const resp = await fetch(`/api/messages.list?uid=${uid}`);
+      if (resp.status === 200) {
+        const data = await resp.json();
+        setMessageList(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    if (userInfo === null) return;
+    fetchMessageList(userInfo.uid);
+  }, [userInfo]);
   if (userInfo === null) {
     return <p>사용자를 찾을 수 없습니다.</p>;
   }
+  const isOwner = authUser !== null && authUser.uid === userInfo.uid;
   return (
     <ServiceLayout title={`${userInfo.displayName}의 홈`} minH="100vh" backgroundColor="gray.50">
       <Box maxW="md" mx="auto" pt="6">
@@ -174,30 +194,16 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
           </FormControl>
         </Box>
         <VStack spacing="12px" mt="6">
-          <MessageItem
-            uid="hi"
-            displayName="test"
-            photoURL={authUser?.photoURL ?? ''}
-            isOwner={false}
-            item={{
-              id: 'testid',
-              message: 'testtestets',
-              createAt: '2023-01-22T20:15:55+09:00',
-              reply: '댓글달아봄',
-              replyAt: '2023-03-15T20:15:55+09:00',
-            }}
-          />
-          <MessageItem
-            uid="hi"
-            displayName="test"
-            photoURL={authUser?.photoURL ?? ''}
-            isOwner
-            item={{
-              id: 'testid',
-              message: 'testtestets',
-              createAt: '2023-04-22T20:15:55+09:00',
-            }}
-          />
+          {messageList.map((messageData) => (
+            <MessageItem
+              key={`message-item-${userInfo.uid}-${messageData.id}`}
+              item={messageData}
+              uid={userInfo.uid}
+              displayName={userInfo.displayName ?? ''}
+              photoURL={userInfo.photoURL ?? 'https://bit.ly/broken-link'}
+              isOwner={isOwner}
+            />
+          ))}
         </VStack>
       </Box>
     </ServiceLayout>
@@ -210,20 +216,23 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ query }) =
     return {
       props: {
         userInfo: null,
+        screenName: '',
       },
     };
   }
+  const screenNameToStr = Array.isArray(screenName) ? screenName[0] : screenName;
   try {
-    const protocol = process.env.PROTOCOL || 'http';
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
     const host = process.env.HOST || 'localhost';
     const port = process.env.PORT || '3000';
-    const baseURL = `${protocol}://${host}:${port}`;
 
-    const userInfoRes: AxiosResponse<InAuthUser> = await axios(`${baseURL}/api/user.info/${screenName}`);
-    console.info(userInfoRes.data);
+    const baseUrl = `${protocol}://${host}${process.env.NODE_ENV === 'development' ? `:${port}` : ''}`;
+    console.log(baseUrl);
+    const userInfoResp: AxiosResponse<InAuthUser> = await axios(`${baseUrl}/api/user.info/${screenName}`);
     return {
       props: {
-        userInfo: userInfoRes.data ?? null,
+        userInfo: userInfoResp.data ?? null,
+        screenName: screenNameToStr,
       },
     };
   } catch (err) {
@@ -231,8 +240,10 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ query }) =
     return {
       props: {
         userInfo: null,
+        screenName: '',
       },
     };
   }
 };
+
 export default UserHomePage;
