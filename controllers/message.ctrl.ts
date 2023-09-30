@@ -15,7 +15,19 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
   return res.status(201).end();
 }
 
+async function list(req: NextApiRequest, res: NextApiResponse) {
+  const { uid } = req.query;
+  if (uid === undefined) {
+    throw new BadReqError('uid 누락');
+  }
+  const uidToStr = Array.isArray(uid) ? uid[0] : uid;
+  const listResp = await MessageModel.list({ uid: uidToStr });
+
+  return res.status(200).json(listResp);
+}
+
 const MessageCtrl = {
   post,
+  list,
 };
 export default MessageCtrl;
