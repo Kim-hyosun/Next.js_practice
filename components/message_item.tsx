@@ -33,7 +33,7 @@ const MessageItem = function ({ uid, isOwner, displayName, photoURL, item, onSen
 
   const haveReply = item.reply !== undefined;
   return (
-    <Box borderRadius="md" width="full" boxShadow="md">
+    <Box borderRadius="md" width="full" boxShadow="md" bg="#fff">
       <Box>
         <Flex pl="2" pt="2" alignItems="center">
           <Avatar

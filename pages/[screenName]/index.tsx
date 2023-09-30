@@ -22,6 +22,7 @@ import { useAuth } from '@/contexts/auth_user.context';
 import { InAuthUser } from '@/models/in_auth_user';
 import MessageItem from '@/components/message_item';
 import { InMessage } from '@/models/message/in_message';
+import { useQuery } from 'react-query';
 
 interface Props {
   userInfo: InAuthUser | null;
@@ -81,7 +82,7 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
   const [messageList, setMessageList] = useState<InMessage[]>([]);
   const [messageListFetchTrigger, setMessageListFetchTrigger] = useState(false); //글 등록시 리렌더링 위해
 
-  async function fetchMessageList(uid: string) {
+  /* async function fetchMessageList(uid: string) {
     try {
       const resp = await fetch(`/api/messages.list?uid=${uid}&page=${page}&size=10`);
       if (resp.status === 200) {
@@ -98,7 +99,7 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
     } catch (err) {
       console.error(err);
     }
-  }
+  } */
 
   async function fetchMessageInfo({ uid, messageId }: { uid: string; messageId: string }) {
     try {
@@ -120,11 +121,38 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
       console.error(err);
     }
   }
+  const messageListQueryKey = ['messageList', userInfo?.uid, page, messageListFetchTrigger];
 
-  useEffect(() => {
+  useQuery(
+    messageListQueryKey,
+    async () =>
+      await axios.get<{
+        totalElements: number;
+        totalPages: number;
+        page: number;
+        size: number;
+        content: InMessage[];
+      }>(`/api/messages.list?uid=${userInfo?.uid}&page=${page}&size=10`),
+    {
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+      onSuccess: (data) => {
+        //성공시
+        setTotalPage(data.data.totalPages);
+        if (page === 1) {
+          //키 중복 피하기 위한 예외처리
+          setMessageList([...data.data.content]);
+          return;
+        }
+        setMessageList((prev) => [...prev, ...data.data.content]);
+      },
+    },
+  );
+
+  /*  useEffect(() => {
     if (userInfo === null) return;
     fetchMessageList(userInfo.uid);
-  }, [userInfo, messageListFetchTrigger, page]);
+  }, [userInfo, messageListFetchTrigger, page]); */
   if (userInfo === null) {
     return <p>사용자를 찾을 수 없습니다.</p>;
   }
@@ -200,6 +228,11 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
                   toast({ title: '메시지 등록 실패', position: 'top-right' });
                 }
                 setMessage('');
+                setPage(1);
+                setTimeout(() => {
+                  //값 변경을 조금 미뤄서 키중복 발생위험 낮춤
+                  setMessageListFetchTrigger((prev) => !prev);
+                }, 50);
                 setMessageListFetchTrigger((prev) => !prev);
               }}
             >
