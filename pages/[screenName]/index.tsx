@@ -11,6 +11,8 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+
+//import { TriangleDownIcon } from '@chakra-ui/icons';
 import { GetServerSideProps, NextPage } from 'next';
 import ResizeTextarea from 'react-textarea-autosize';
 import { useEffect, useState } from 'react';
@@ -71,16 +73,27 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
   const [message, setMessage] = useState('');
   const toast = useToast();
   const [isAnonymous, setAnonymous] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [totalpage, setTotalPage] = useState(1);
+
   const { authUser } = useAuth();
   const [messageList, setMessageList] = useState<InMessage[]>([]);
-  const [messageListFetchTrigger, setMessageListFetchTrigger] = useState(false); //댓글 등록시 리렌더링 위해
+  const [messageListFetchTrigger, setMessageListFetchTrigger] = useState(false); //글 등록시 리렌더링 위해
 
   async function fetchMessageList(uid: string) {
     try {
-      const resp = await fetch(`/api/messages.list?uid=${uid}`);
+      const resp = await fetch(`/api/messages.list?uid=${uid}&page=${page}&size=10`);
       if (resp.status === 200) {
-        const data = await resp.json();
-        setMessageList(data);
+        const data: {
+          totalElements: number;
+          totalPages: number;
+          page: number;
+          size: number;
+          content: InMessage[];
+        } = await resp.json();
+        setMessageList((prev) => [...prev, ...data.content]);
+        setTotalPage(data.totalPages);
       }
     } catch (err) {
       console.error(err);
@@ -111,7 +124,7 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
   useEffect(() => {
     if (userInfo === null) return;
     fetchMessageList(userInfo.uid);
-  }, [userInfo, messageListFetchTrigger]);
+  }, [userInfo, messageListFetchTrigger, page]);
   if (userInfo === null) {
     return <p>사용자를 찾을 수 없습니다.</p>;
   }
@@ -217,9 +230,9 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
           </FormControl>
         </Box>
         <VStack spacing="12px" mt="6">
-          {messageList.map((messageData) => (
+          {messageList.map((messageData, index) => (
             <MessageItem
-              key={`message-item-${userInfo.uid}-${messageData.id}`}
+              key={`message-item-${userInfo.uid}-${messageData.id}-${index}`}
               item={messageData}
               uid={userInfo.uid}
               displayName={userInfo.displayName ?? ''}
@@ -231,6 +244,18 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
             />
           ))}
         </VStack>
+        {totalpage > page && (
+          <Button
+            width="full"
+            mt="2"
+            fontSize="sm"
+            onClick={() => {
+              setPage((p) => p + 1);
+            }}
+          >
+            더보기
+          </Button>
+        )}
       </Box>
     </ServiceLayout>
   );

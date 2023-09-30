@@ -1,4 +1,5 @@
 import { firestore } from 'firebase-admin';
+import { InAuthUser } from '@/models/in_auth_user';
 import { InMessage, InMessageServer } from './in_message';
 import CustomServeError from '@/controllers/error/custom_serve_error';
 import FirebaseAdmin from '../firebase_admin';
@@ -23,9 +24,15 @@ async function post({
 }) {
   const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
   await Firestore.runTransaction(async (transaction) => {
+    let messageCount = 1;
     const memberDoc = await transaction.get(memberRef);
     if (memberDoc.exists === false) {
       throw new CustomServeError({ statusCode: 400, message: '존재하지 않는 사용자 입니다.' });
+    }
+
+    const memberInfo = memberDoc.data() as InAuthUser & { messageCount?: number };
+    if (memberInfo.messageCount !== undefined) {
+      messageCount = memberInfo.messageCount;
     }
     const newMessageRef = memberRef.collection(MSG_COL).doc();
 
@@ -36,14 +43,17 @@ async function post({
         displayName: string;
         photoURL?: string;
       };
+      messageNo: number;
     } = {
       message,
+      messageNo: messageCount,
       createAt: firestore.FieldValue.serverTimestamp(),
     };
     if (author !== undefined) {
       newMessageBody.author = author;
     }
     transaction.set(newMessageRef, newMessageBody);
+    transaction.update(memberRef, { messageCount: messageCount + 1 });
   });
 }
 
@@ -67,6 +77,40 @@ async function list({ uid }: { uid: string }) {
       return returnData;
     });
     return data;
+  });
+  return listData;
+}
+
+async function listWithPage({ uid, page = 1, size = 10 }: { uid: string; page?: number; size?: number }) {
+  const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
+  const listData = await Firestore.runTransaction(async (transaction) => {
+    const memberDoc = await transaction.get(memberRef);
+    if (memberDoc.exists === false) {
+      throw new CustomServeError({ statusCode: 400, message: '존재하지 않는 사용자 입니다.' });
+    }
+    const memberInfo = memberDoc.data() as InAuthUser & { messageCount?: number };
+    const { messageCount = 0 } = memberInfo;
+    const totalElements = messageCount !== 0 ? messageCount - 1 : 0; //전체 질문개수
+    const remains = totalElements % size; //페이지안에 들어가지 못한 나머지 질문개수
+    const totalPages = (totalElements - remains) / size + (remains > 0 ? 1 : 0); //전체페이지 개수
+    const startAt = totalElements - (page - 1) * size; //어디서부터 값을 가져와야 하는지(전체 질문개수 - (몇페이지 - 1 ) * 10개단위로페이지에들어감)=> 전체질문 100개중 2페이지이면, 90번째부터 가져와라 됨
+    if (startAt < 0) {
+      //데이터가 없는 상태이면?
+      return { totalElements, totalPages: 0, page, size, content: [] };
+    }
+    const messageCol = memberRef.collection(MSG_COL).orderBy('messageNo', 'desc').startAt(startAt).limit(size); //메시지 리스트를 날짜순으로 정렬
+    const messageColDoc = await transaction.get(messageCol);
+    const data = messageColDoc.docs.map((mapvalue) => {
+      const docData = mapvalue.data() as Omit<InMessageServer, 'id'>;
+      const returnData = {
+        ...docData,
+        id: mapvalue.id,
+        createAt: docData.createAt.toDate().toISOString(),
+        replyAt: docData.replyAt ? docData.replyAt.toDate().toISOString() : undefined,
+      } as InMessage;
+      return returnData;
+    });
+    return { totalElements, totalPages, page, size, content: data };
   });
   return listData;
 }
@@ -123,6 +167,7 @@ async function postReply({ uid, messageId, reply }: { uid: string; messageId: st
 const MessageModel = {
   post,
   list,
+  listWithPage,
   get,
   postReply,
 };

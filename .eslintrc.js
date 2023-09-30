@@ -5,6 +5,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:import/typescript',
     'plugin:prettier/recommended',
+    'react-app',
     'prettier',
   ],
   plugins: ['@typescript-eslint', 'prettier', 'react-hooks'],
@@ -89,7 +90,7 @@ module.exports = {
         avoidEscape: true,
       },
     ],
-    'prettier/prettier': 'error',
+    'prettier/prettier': ['error', { endOfLine: 'auto' }],
     'jsx-a11y/href-no-hash': 'off',
     'jsx-a11y/anchor-is-valid': [
       'warn',
