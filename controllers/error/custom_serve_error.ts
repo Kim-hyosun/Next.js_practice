@@ -1,4 +1,4 @@
-export default class CustomServeError extends Error {
+export default class CustomServerError extends Error {
   public statusCode: number;
 
   public location?: string;

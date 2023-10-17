@@ -1,3 +1,5 @@
+import FirebaseAdmin from '@/models/firebase_admin';
+import CustomServerError from '@/controllers/error/custom_serve_error';
 import { NextApiRequest, NextApiResponse } from 'next';
 import MessageModel from '@/models/message/message.model';
 import BadReqError from './error/bad_request_error';
@@ -66,8 +68,39 @@ async function postReply(req: NextApiRequest, res: NextApiResponse) {
   return res.status(201).end();
 }
 
+async function updateMessage(req: NextApiRequest, res: NextApiResponse) {
+  let token = req.headers.authorization;
+  if (token === undefined) {
+    throw new CustomServerError({ statusCode: 401, message: '권한이 없습니다.' });
+  }
+  let tokenUid: null | string = null;
+  try {
+    const decode = FirebaseAdmin.getInstanse().Auth.verifyIdToken(token);
+    tokenUid = (await decode).uid;
+  } catch (err) {
+    throw new BadReqError('토큰에 문제가 있습니다.');
+  }
+  const { uid, messageId, deny } = req.body;
+  if (uid === undefined) {
+    throw new BadReqError('uid 누락');
+  }
+  if (uid !== tokenUid) {
+    throw new CustomServerError({ statusCode: 401, message: '수정 권한이 없습니다.' });
+  }
+  if (messageId === undefined) {
+    throw new BadReqError('messageId 누락');
+  }
+  if (deny === undefined) {
+    throw new BadReqError('deny 누락');
+  }
+
+  const result = await MessageModel.updateMessage({ uid, messageId, deny });
+  return res.status(200).json(result);
+}
+
 const MessageCtrl = {
   post,
+  updateMessage,
   list,
   get,
   postReply,

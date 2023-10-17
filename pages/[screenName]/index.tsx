@@ -15,7 +15,7 @@ import {
 //import { TriangleDownIcon } from '@chakra-ui/icons';
 import { GetServerSideProps, NextPage } from 'next';
 import ResizeTextarea from 'react-textarea-autosize';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { ServiceLayout } from '@/components/service_layout';
 import { useAuth } from '@/contexts/auth_user.context';
@@ -26,6 +26,7 @@ import { useQuery } from 'react-query';
 
 interface Props {
   userInfo: InAuthUser | null;
+  screenName: string;
 }
 
 async function postMessage({
@@ -70,7 +71,7 @@ async function postMessage({
   }
 }
 
-const UserHomePage: NextPage<Props> = function ({ userInfo }) {
+const UserHomePage: NextPage<Props> = function ({ userInfo, screenName }) {
   const [message, setMessage] = useState('');
   const toast = useToast();
   const [isAnonymous, setAnonymous] = useState(true);
@@ -268,6 +269,7 @@ const UserHomePage: NextPage<Props> = function ({ userInfo }) {
               key={`message-item-${userInfo.uid}-${messageData.id}-${index}`}
               item={messageData}
               uid={userInfo.uid}
+              screenName={screenName}
               displayName={userInfo.displayName ?? ''}
               photoURL={userInfo.photoURL ?? 'https://bit.ly/broken-link'}
               isOwner={isOwner}
@@ -304,13 +306,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ query }) =
       },
     };
   }
+
   const screenNameToStr = Array.isArray(screenName) ? screenName[0] : screenName;
   try {
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const protocol = process.env.PROTOCOL || 'http';
     const host = process.env.HOST || 'localhost';
     const port = process.env.PORT || '3000';
 
-    const baseUrl = `${protocol}://${host}${process.env.NODE_ENV === 'development' ? `:${port}` : ''}`;
+    const baseUrl = `${protocol}://${host}:${port}`;
     console.log(baseUrl);
     const userInfoResp: AxiosResponse<InAuthUser> = await axios(`${baseUrl}/api/user.info/${screenName}`);
     return {
