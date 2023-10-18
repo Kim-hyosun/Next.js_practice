@@ -1,5 +1,4 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
 import playwright from 'playwright-core';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Chromium from 'chrome-aws-lambda';
@@ -37,9 +36,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     type: 'jpeg',
   });
 
-  await browser.close();
-
+  // 헤더 설정
   res.setHeader('Cache-Control', 's-maxage=31536000, public');
   res.setHeader('Content-Type', 'image/jpeg');
+
+  // 응답 데이터 전송
   res.end(data);
 }
