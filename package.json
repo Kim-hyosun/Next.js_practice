@@ -1,5 +1,5 @@
 {
-  "name": "blahx2",
+  "name": "waggle",
   "private": true,
   "scripts": {
     "dev": "next dev",
