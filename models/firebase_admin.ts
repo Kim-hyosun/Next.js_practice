@@ -13,7 +13,7 @@ export default class FirebaseAdmin {
 
   private init = false;
 
-  public static getInstanse(): FirebaseAdmin {
+  public static getInstance(): FirebaseAdmin {
     if (FirebaseAdmin.instance === undefined || FirebaseAdmin.instance === null) {
       //초기화 진행
       FirebaseAdmin.instance = new FirebaseAdmin();

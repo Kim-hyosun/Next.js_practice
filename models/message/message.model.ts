@@ -8,7 +8,7 @@ const MEMBER_COL = 'members';
 const MSG_COL = 'messages';
 //const SCR_NAME_COL = 'screen_names';
 
-const { Firestore } = FirebaseAdmin.getInstanse();
+const { Firestore } = FirebaseAdmin.getInstance();
 
 async function post({
   uid,

@@ -10,10 +10,10 @@ async function add({ uid, email, displayName, photoURL }: InAuthUser): Promise<A
   try {
     const screenName = (email as string).replace('@gmail.com', '');
 
-    const addResult = await FirebaseAdmin.getInstanse().Firestore.runTransaction(async (transaction) => {
-      const memberRef = FirebaseAdmin.getInstanse().Firestore.collection(MEMBER_COL).doc(uid);
+    const addResult = await FirebaseAdmin.getInstance().Firestore.runTransaction(async (transaction) => {
+      const memberRef = FirebaseAdmin.getInstance().Firestore.collection(MEMBER_COL).doc(uid);
 
-      const screenNameRef = FirebaseAdmin.getInstanse().Firestore.collection(SCR_NAME_COL).doc(screenName);
+      const screenNameRef = FirebaseAdmin.getInstance().Firestore.collection(SCR_NAME_COL).doc(screenName);
 
       const memberDoc = await transaction.get(memberRef);
 
@@ -45,7 +45,7 @@ async function add({ uid, email, displayName, photoURL }: InAuthUser): Promise<A
 }
 
 async function findByScreenName(screenName: string): Promise<InAuthUser | null> {
-  const memberRef = FirebaseAdmin.getInstanse().Firestore.collection(SCR_NAME_COL).doc(screenName);
+  const memberRef = FirebaseAdmin.getInstance().Firestore.collection(SCR_NAME_COL).doc(screenName);
 
   const memberDoc = await memberRef.get();
 
