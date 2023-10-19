@@ -75,7 +75,7 @@ async function updateMessage(req: NextApiRequest, res: NextApiResponse) {
   }
   let tokenUid: null | string = null;
   try {
-    const decode = FirebaseAdmin.getInstanse().Auth.verifyIdToken(token);
+    const decode = FirebaseAdmin.getInstance().Auth.verifyIdToken(token);
     tokenUid = (await decode).uid;
   } catch (err) {
     throw new BadReqError('토큰에 문제가 있습니다.');

@@ -91,7 +91,7 @@ const MessagePage: NextPage<Props> = function ({ userInfo, messageData: initMsgD
 
 export const getServerSideProps: GetServerSideProps<Props> = async ({ query }) => {
   const { screenName, messageId } = query;
-  console.log(screenName, messageId);
+  //console.log(screenName, messageId);
   if (screenName === undefined) {
     return {
       props: {
