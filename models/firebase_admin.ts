@@ -12,6 +12,7 @@ export default class FirebaseAdmin {
   public static instance: FirebaseAdmin;
 
   private init = false;
+  Firebase: any;
 
   public static getInstance(): FirebaseAdmin {
     if (FirebaseAdmin.instance === undefined || FirebaseAdmin.instance === null) {
@@ -25,8 +26,8 @@ export default class FirebaseAdmin {
 
   //환경을 초기화할 때 사용할 메서드
   private bootstrap(): void {
-    const haveApp = admin.apps.length !== 0; //등록된 앱이 존재하면?
-    if (haveApp) {
+    if (!!admin.apps.length === true) {
+      //등록된 앱이 존재하면?
       this.init = true;
       return;
     }

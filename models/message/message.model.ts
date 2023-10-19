@@ -23,6 +23,7 @@ async function post({
   };
 }) {
   const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
+  
   await Firestore.runTransaction(async (transaction) => {
     let messageCount = 1;
     const memberDoc = await transaction.get(memberRef);

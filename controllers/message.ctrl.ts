@@ -3,8 +3,15 @@ import CustomServerError from '@/controllers/error/custom_serve_error';
 import { NextApiRequest, NextApiResponse } from 'next';
 import MessageModel from '@/models/message/message.model';
 import BadReqError from './error/bad_request_error';
+import Ajv from 'ajv';
+import { PostMessageReq } from './json_schema/post_message_req';
 
 async function post(req: NextApiRequest, res: NextApiResponse) {
+  const ajv = new Ajv();
+  const valid = ajv.validate(PostMessageReq, { ...req.body });
+  if (valid === false) {
+    throw new BadReqError('요청이 잘못되었습니다.');
+  }
   const { uid, message, author } = req.body;
   if (uid === undefined) {
     throw new BadReqError('uid 누락');

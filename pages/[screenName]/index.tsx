@@ -80,6 +80,7 @@ const UserHomePage: NextPage<Props> = function ({ userInfo, screenName }) {
   const [totalpage, setTotalPage] = useState(1);
 
   const { authUser } = useAuth();
+
   const [messageList, setMessageList] = useState<InMessage[]>([]);
   const [messageListFetchTrigger, setMessageListFetchTrigger] = useState(false); //글 등록시 리렌더링 위해
 
@@ -314,8 +315,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ query }) =
     const port = process.env.PORT || '3000';
 
     const baseUrl = `${protocol}://${host}:${port}`;
-    console.log(baseUrl);
+
     const userInfoResp: AxiosResponse<InAuthUser> = await axios(`${baseUrl}/api/user.info/${screenName}`);
+    //console.log(userInfoResp.data);
     return {
       props: {
         userInfo: userInfoResp.data ?? null,
