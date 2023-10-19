@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { serialize } from 'v8';
 import MemberModel from '@/models/member/member.model';
 import BadReqError from './error/bad_request_error';
 

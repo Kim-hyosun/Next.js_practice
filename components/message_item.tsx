@@ -57,9 +57,13 @@ const MessageItem = function ({ uid, isOwner, displayName, screenName, photoURL,
         title: '로그인한 사용자만 사용할 수 있는 메뉴입니다.',
       });
     }
+
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('authorization', token as string);
     const resp = await fetch('/api/messages.deny', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', authorization: token },
+      headers: headers,
       body: JSON.stringify({
         uid,
         messageId: item.id,
