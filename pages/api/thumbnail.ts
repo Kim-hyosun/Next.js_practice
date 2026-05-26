@@ -1,24 +1,25 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import playwright from 'playwright-core';
 import { NextApiRequest, NextApiResponse } from 'next';
-import Chromium from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const localChromePath = process.env.NODE_ENV !== 'development' ? '' : process.env.LOCAL_CHROME_PATH ?? '';
+  const localChromePath = process.env.LOCAL_CHROME_PATH ?? '';
 
-  if (process.env.NODE_ENV !== 'development') {
+  if (!isDev) {
     const protocol = process.env.PROTOCOL || 'http';
     const host = process.env.HOST || 'localhost';
     const port = process.env.PORT || '3000';
     const baseUrl = `${protocol}://${host}:${port}`;
 
-    await Chromium.font(`${baseUrl}/Pretendard-Regular.ttf`);
+    await chromium.font(`${baseUrl}/Pretendard-Regular.ttf`);
   }
 
   const browser = await playwright.chromium.launch({
-    args: Chromium.args,
-    executablePath: process.env.NODE_ENV !== 'development' ? await Chromium.executablePath : localChromePath,
-    headless: process.env.NODE_ENV !== 'development' ? Chromium.headless : true,
+    args: chromium.args,
+    executablePath: isDev ? localChromePath : await chromium.executablePath(),
+    headless: true,
   });
 
   const page = await browser.newPage({
@@ -36,10 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     type: 'jpeg',
   });
 
-  // 헤더 설정
+  await browser.close();
+
   res.setHeader('Cache-Control', 's-maxage=31536000, public');
   res.setHeader('Content-Type', 'image/jpeg');
-
-  // 응답 데이터 전송
   res.end(data);
 }

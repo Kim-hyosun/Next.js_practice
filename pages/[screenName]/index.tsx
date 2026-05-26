@@ -235,7 +235,6 @@ const UserHomePage: NextPage<Props> = function ({ userInfo, screenName }) {
                   //값 변경을 조금 미뤄서 키중복 발생위험 낮춤
                   setMessageListFetchTrigger((prev) => !prev);
                 }, 50);
-                setMessageListFetchTrigger((prev) => !prev);
               }}
             >
               등록

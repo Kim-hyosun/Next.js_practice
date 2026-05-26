@@ -29,8 +29,6 @@ export default function useFirebaseAuth() {
           }),
         });
         console.info({ status: resp.status });
-        const respData = resp.json;
-        console.info(respData);
       }
     } catch (err) {
       console.error(err);

@@ -26,7 +26,7 @@ const GNB = function () {
       <MenuList>
         <MenuItem
           onClick={() => {
-            window.location.href = `${authUser?.email?.replace('@gmail.com', '')}`;
+            window.location.href = `/${authUser?.email?.replace('@gmail.com', '') ?? ''}`;
           }}
         >
           사용자 홈으로 이동

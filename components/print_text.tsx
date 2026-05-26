@@ -1,5 +1,5 @@
 import { Text } from '@chakra-ui/react';
-import './print_text.module.css';
+
 interface Props {
   printText: string | string[];
 }

@@ -10,7 +10,7 @@ async function add({ uid, email, displayName, photoURL }: InAuthUser): Promise<A
   try {
     const screenName = (email as string).replace('@gmail.com', '');
 
-    const addResult = await FirebaseAdmin.getInstance().Firestore.runTransaction(async (transaction) => {
+    await FirebaseAdmin.getInstance().Firestore.runTransaction(async (transaction) => {
       const memberRef = FirebaseAdmin.getInstance().Firestore.collection(MEMBER_COL).doc(uid);
 
       const screenNameRef = FirebaseAdmin.getInstance().Firestore.collection(SCR_NAME_COL).doc(screenName);
@@ -18,8 +18,7 @@ async function add({ uid, email, displayName, photoURL }: InAuthUser): Promise<A
       const memberDoc = await transaction.get(memberRef);
 
       if (memberDoc.exists) {
-        //이미 추가된 상태
-        return false;
+        return;
       }
       const addData = {
         uid,
@@ -29,11 +28,7 @@ async function add({ uid, email, displayName, photoURL }: InAuthUser): Promise<A
       };
       transaction.set(memberRef, addData);
       transaction.set(screenNameRef, addData);
-      return true;
     });
-    if (addResult === false) {
-      return { result: true, id: uid };
-    }
     return { result: true, id: uid };
   } catch (err) {
     console.error(err);

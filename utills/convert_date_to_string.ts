@@ -36,9 +36,6 @@ function convertDateToStirng(dateString: string): string {
   if (years === 0 && months === 0) {
     return `${days}일`;
   }
-  if (years === 0 && months === 0) {
-    return `${days}일`;
-  }
   if (years === 0) {
     return `${months}개월`;
   }
