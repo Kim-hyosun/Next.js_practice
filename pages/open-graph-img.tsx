@@ -1,7 +1,7 @@
-import PrintText from '@/components/print_text';
-import { Box, Img } from '@chakra-ui/react';
+import { Box, Image } from '@chakra-ui/react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import PrintText from '@/components/print_text';
 
 const OpenGraphImgPage: NextPage = () => {
   const { query } = useRouter();
@@ -10,7 +10,7 @@ const OpenGraphImgPage: NextPage = () => {
   return (
     <Box width="full" bgColor="#fff" p="25px" pt="50px" borderRadius="lg">
       <PrintText printText={printText} />
-      <Img src="/screenshot_bg.svg" alt="frame" />
+      <Image src="/screenshot_bg.svg" alt="frame" />
     </Box>
   );
 };

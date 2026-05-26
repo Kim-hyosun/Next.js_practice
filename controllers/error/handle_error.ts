@@ -1,9 +1,9 @@
 import { NextApiResponse } from 'next';
-import CustomServeError from './custom_serve_error';
+import CustomServerError from './custom_server_error';
 
 const handleError = (err: unknown, res: NextApiResponse) => {
   const customError =
-    err instanceof CustomServeError ? err : new CustomServeError({ statusCode: 500, message: 'unknown Error' });
+    err instanceof CustomServerError ? err : new CustomServerError({ statusCode: 500, message: 'unknown Error' });
 
   if (customError.location) {
     res.setHeader('location', customError.location);

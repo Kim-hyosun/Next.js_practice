@@ -7,43 +7,37 @@ interface Config {
     projectId: string;
   };
 }
-//싱글톤 클래스
+
 export default class FirebaseAdmin {
   public static instance: FirebaseAdmin;
 
   private init = false;
-  Firebase: any;
 
   public static getInstance(): FirebaseAdmin {
     if (FirebaseAdmin.instance === undefined || FirebaseAdmin.instance === null) {
-      //초기화 진행
       FirebaseAdmin.instance = new FirebaseAdmin();
-      //TODO: 환경을 초기화 한다.
       FirebaseAdmin.instance.bootstrap();
     }
     return FirebaseAdmin.instance;
   }
 
-  //환경을 초기화할 때 사용할 메서드
   private bootstrap(): void {
-    if (!!admin.apps.length === true) {
-      //등록된 앱이 존재하면?
+    if (admin.apps.length > 0) {
       this.init = true;
       return;
     }
     const config: Config = {
-      //인터페이스
       credential: {
-        projectId: process.env.projectId || '',
-        clientEmail: process.env.clientEmail || '',
-        privateKey: (process.env.privateKey || '').replace(/\\n/g, '\n'),
+        projectId: process.env.FIREBASE_PROJECT_ID || '',
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
+        privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
       },
     };
     admin.initializeApp({ credential: admin.credential.cert(config.credential) });
+    this.init = true;
     console.info('bootstrap firebase admin');
   }
 
-  /** firestore를 반환 */
   public get Firestore(): FirebaseFirestore.Firestore {
     if (this.init === false) {
       this.bootstrap();

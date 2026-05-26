@@ -1,35 +1,30 @@
 import { getApps, initializeApp } from 'firebase/app';
 import { Auth, getAuth } from 'firebase/auth';
-import getConfig from 'next/config';
-
-const { publicRuntimeConfig } = getConfig();
 
 const FirebaseCredentials = {
-  apiKey: publicRuntimeConfig.apiKey,
-  authDomain: publicRuntimeConfig.authDomain,
-  projectId: publicRuntimeConfig.projectId,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
 };
 
 export default class FirebaseClient {
-  private static instanse: FirebaseClient;
+  private static instance: FirebaseClient;
 
   private auth: Auth;
 
   public constructor() {
-    const apps = getApps();
-    if (apps.length === 0) {
+    if (getApps().length === 0) {
       console.info('firebase client init start');
       initializeApp(FirebaseCredentials);
     }
     this.auth = getAuth();
-    console.info('firebase auth');
   }
 
   public static getInstance(): FirebaseClient {
-    if (FirebaseClient.instanse === undefined || FirebaseClient.instanse === null) {
-      FirebaseClient.instanse = new FirebaseClient();
+    if (FirebaseClient.instance === undefined || FirebaseClient.instance === null) {
+      FirebaseClient.instance = new FirebaseClient();
     }
-    return FirebaseClient.instanse;
+    return FirebaseClient.instance;
   }
 
   public get Auth(): Auth {

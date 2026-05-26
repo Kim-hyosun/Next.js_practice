@@ -17,7 +17,7 @@ import {
 import ResizeTextarea from 'react-textarea-autosize';
 import { useState } from 'react';
 import { InMessage } from '@/models/message/in_message';
-import convertDateToStirng from '@/utills/convert_date_to_string';
+import convertDateToString from '@/utils/convert_date_to_string';
 import MoreBtnIcon from './more_btn_icon';
 import FirebaseClient from '@/models/firebase_client';
 
@@ -89,7 +89,7 @@ const MessageItem = function ({ uid, isOwner, displayName, screenName, photoURL,
             {item.author ? item.author.displayName : 'anonymous'}
           </Text>
           <Text whiteSpace="pre-line" fontSize="xx-small" color="gray.500" ml="1">
-            {convertDateToStirng(item.createAt)}
+            {convertDateToString(item.createAt)}
           </Text>
           <Spacer />
           {isOwner && ( //owner이어야만 볼수있는 버튼
@@ -140,7 +140,7 @@ const MessageItem = function ({ uid, isOwner, displayName, screenName, photoURL,
                 <Flex alignItems="center">
                   <Text fontSize="xs">{displayName}</Text>
                   <Text whiteSpace="pre-line" fontSize="xs" color="gray">
-                    {convertDateToStirng(item.replyAt!)}
+                    {convertDateToString(item.replyAt!)}
                   </Text>
                 </Flex>
                 <Text whiteSpace="pre-line" fontSize="xs">

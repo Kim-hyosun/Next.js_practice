@@ -1,5 +1,5 @@
 import FirebaseAdmin from '@/models/firebase_admin';
-import CustomServerError from '@/controllers/error/custom_serve_error';
+import CustomServerError from '@/controllers/error/custom_server_error';
 import { NextApiRequest, NextApiResponse } from 'next';
 import MessageModel from '@/models/message/message.model';
 import BadReqError from './error/bad_request_error';

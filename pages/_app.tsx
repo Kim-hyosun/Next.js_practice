@@ -1,14 +1,12 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import '../styles/globals.css';
-import type { AppProps /*, AppContext */ } from 'next/app';
+import type { AppProps } from 'next/app';
 import { ChakraProvider } from '@chakra-ui/react';
-import { AuthUserProvider } from '@/contexts/auth_user.context';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRef } from 'react';
+import { AuthUserProvider } from '@/contexts/auth_user.context';
 
-// eslint-disable-next-line react/function-component-definition
 function MyApp({ Component, pageProps }: AppProps) {
-  const queryClientRef = useRef<QueryClient>();
+  const queryClientRef = useRef<QueryClient>(undefined);
   if (!queryClientRef.current) {
     queryClientRef.current = new QueryClient();
   }
