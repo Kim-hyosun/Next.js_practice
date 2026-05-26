@@ -12,28 +12,23 @@ export default function useFirebaseAuth() {
 
   async function signInWithGoogle(): Promise<void> {
     const provider = new GoogleAuthProvider();
+    const signInResult = await signInWithPopup(FirebaseClient.getInstance().Auth, provider);
+    if (!signInResult.user) return;
 
-    try {
-      const signInResult = await signInWithPopup(FirebaseClient.getInstance().Auth, provider);
-      if (!signInResult.user) return;
+    await fetch('/api/members.add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: signInResult.user.uid,
+        email: signInResult.user.email,
+        displayName: signInResult.user.displayName,
+        photoURL: signInResult.user.photoURL,
+      }),
+    });
 
-      await fetch('/api/members.add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: signInResult.user.uid,
-          email: signInResult.user.email,
-          displayName: signInResult.user.displayName,
-          photoURL: signInResult.user.photoURL,
-        }),
-      });
-
-      const screenName = (signInResult.user.email ?? '').replace('@gmail.com', '');
-      if (screenName) {
-        router.push(`/${screenName}`);
-      }
-    } catch (err) {
-      console.error(err);
+    const screenName = (signInResult.user.email ?? '').replace('@gmail.com', '');
+    if (screenName) {
+      await router.push(`/${screenName}`);
     }
   }
 
