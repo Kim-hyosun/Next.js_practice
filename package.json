@@ -24,7 +24,7 @@
     "firebase": "^11.0.2",
     "firebase-admin": "^13.0.1",
     "framer-motion": "^11.13.0",
-    "next": "15.5.0",
+    "next": "15.5.9",
     "playwright-core": "^1.49.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
