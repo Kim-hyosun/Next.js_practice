@@ -14,13 +14,14 @@ import {
 import { GetServerSideProps, NextPage } from 'next';
 import ResizeTextarea from 'react-textarea-autosize';
 import { useState } from 'react';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { useInfiniteQuery, useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { ServiceLayout } from '@/components/service_layout';
 import { useAuth } from '@/contexts/auth_user.context';
 import { InAuthUser } from '@/models/in_auth_user';
 import MessageItem from '@/components/message_item';
 import { InMessage } from '@/models/message/in_message';
+import MemberModel from '@/models/member/member.model';
 
 interface Props {
   userInfo: InAuthUser | null;
@@ -232,24 +233,13 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ query }) =
   if (screenName === undefined) {
     return { props: { userInfo: null, screenName: '' } };
   }
-
   const screenNameToStr = Array.isArray(screenName) ? screenName[0] : screenName;
   try {
-    const protocol = process.env.PROTOCOL || 'http';
-    const host = process.env.HOST || 'localhost';
-    const port = process.env.PORT || '3000';
-    const baseUrl = `${protocol}://${host}:${port}`;
-
-    const userInfoResp: AxiosResponse<InAuthUser> = await axios(`${baseUrl}/api/user.info/${screenName}`);
-    return {
-      props: {
-        userInfo: userInfoResp.data ?? null,
-        screenName: screenNameToStr,
-      },
-    };
+    const userInfo = await MemberModel.findByScreenName(screenNameToStr);
+    return { props: { userInfo, screenName: screenNameToStr } };
   } catch (err) {
     console.error(err);
-    return { props: { userInfo: null, screenName: '' } };
+    return { props: { userInfo: null, screenName: screenNameToStr } };
   }
 };
 

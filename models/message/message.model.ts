@@ -6,9 +6,8 @@ import FirebaseAdmin from '../firebase_admin';
 
 const MEMBER_COL = 'members';
 const MSG_COL = 'messages';
-//const SCR_NAME_COL = 'screen_names';
 
-const { Firestore } = FirebaseAdmin.getInstance();
+const getFirestore = () => FirebaseAdmin.getInstance().Firestore;
 
 async function post({
   uid,
@@ -22,9 +21,9 @@ async function post({
     photoURL?: string;
   };
 }) {
-  const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
+  const memberRef = getFirestore().collection(MEMBER_COL).doc(uid);
   
-  await Firestore.runTransaction(async (transaction) => {
+  await getFirestore().runTransaction(async (transaction) => {
     let messageCount = 1;
     const memberDoc = await transaction.get(memberRef);
     if (memberDoc.exists === false) {
@@ -59,9 +58,9 @@ async function post({
 }
 
 async function updateMessage({ uid, messageId, deny = true }: { uid: string; messageId: string; deny: boolean }) {
-  const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
-  const messageRef = Firestore.collection(MEMBER_COL).doc(uid).collection(MSG_COL).doc(messageId);
-  const result = await Firestore.runTransaction(async (transaction) => {
+  const memberRef = getFirestore().collection(MEMBER_COL).doc(uid);
+  const messageRef = getFirestore().collection(MEMBER_COL).doc(uid).collection(MSG_COL).doc(messageId);
+  const result = await getFirestore().runTransaction(async (transaction) => {
     const memberDoc = await transaction.get(memberRef);
     const messageDoc = await transaction.get(messageRef);
     if (memberDoc.exists === false) {
@@ -84,8 +83,8 @@ async function updateMessage({ uid, messageId, deny = true }: { uid: string; mes
 }
 
 async function list({ uid }: { uid: string }) {
-  const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
-  const listData = await Firestore.runTransaction(async (transaction) => {
+  const memberRef = getFirestore().collection(MEMBER_COL).doc(uid);
+  const listData = await getFirestore().runTransaction(async (transaction) => {
     const memberDoc = await transaction.get(memberRef);
     if (memberDoc.exists === false) {
       throw new CustomServerError({ statusCode: 400, message: '존재하지 않는 사용자 입니다.' });
@@ -108,8 +107,8 @@ async function list({ uid }: { uid: string }) {
 }
 
 async function listWithPage({ uid, page = 1, size = 10 }: { uid: string; page?: number; size?: number }) {
-  const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
-  const listData = await Firestore.runTransaction(async (transaction) => {
+  const memberRef = getFirestore().collection(MEMBER_COL).doc(uid);
+  const listData = await getFirestore().runTransaction(async (transaction) => {
     const memberDoc = await transaction.get(memberRef);
     if (memberDoc.exists === false) {
       throw new CustomServerError({ statusCode: 400, message: '존재하지 않는 사용자 입니다.' });
@@ -146,11 +145,11 @@ async function listWithPage({ uid, page = 1, size = 10 }: { uid: string; page?: 
 
 async function get({ uid, messageId }: { uid: string; messageId: string }) {
   //특정 리스트만 가지고 메시지 조회해서 컴포넌트만을 업데이트
-  const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
+  const memberRef = getFirestore().collection(MEMBER_COL).doc(uid);
 
-  const messageRef = Firestore.collection(MEMBER_COL).doc(uid).collection(MSG_COL).doc(messageId);
+  const messageRef = getFirestore().collection(MEMBER_COL).doc(uid).collection(MSG_COL).doc(messageId);
 
-  const data = await Firestore.runTransaction(async (transaction) => {
+  const data = await getFirestore().runTransaction(async (transaction) => {
     const memberDoc = await transaction.get(memberRef);
     const messageDoc = await transaction.get(messageRef);
     if (memberDoc.exists === false) {
@@ -173,11 +172,11 @@ async function get({ uid, messageId }: { uid: string; messageId: string }) {
 }
 
 async function postReply({ uid, messageId, reply }: { uid: string; messageId: string; reply: string }) {
-  const memberRef = Firestore.collection(MEMBER_COL).doc(uid);
+  const memberRef = getFirestore().collection(MEMBER_COL).doc(uid);
 
-  const messageRef = Firestore.collection(MEMBER_COL).doc(uid).collection(MSG_COL).doc(messageId);
+  const messageRef = getFirestore().collection(MEMBER_COL).doc(uid).collection(MSG_COL).doc(messageId);
 
-  await Firestore.runTransaction(async (transaction) => {
+  await getFirestore().runTransaction(async (transaction) => {
     const memberDoc = await transaction.get(memberRef);
     const messageDoc = await transaction.get(messageRef);
     if (memberDoc.exists === false) {

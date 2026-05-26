@@ -1,17 +1,15 @@
 import { Avatar, Box, Flex, Text, Button } from '@chakra-ui/react';
-
-//import { TriangleDownIcon } from '@chakra-ui/icons';
 import { GetServerSideProps, NextPage } from 'next';
-
 import { useState } from 'react';
-import axios, { AxiosResponse } from 'axios';
+import Link from 'next/link';
+import Head from 'next/head';
 import { ServiceLayout } from '@/components/service_layout';
 import { useAuth } from '@/contexts/auth_user.context';
 import { InAuthUser } from '@/models/in_auth_user';
 import MessageItem from '@/components/message_item';
 import { InMessage } from '@/models/message/in_message';
-import Link from 'next/link';
-import Head from 'next/head';
+import MemberModel from '@/models/member/member.model';
+import MessageModel from '@/models/message/message.model';
 
 interface Props {
   userInfo: InAuthUser | null;
@@ -89,74 +87,40 @@ const MessagePage: NextPage<Props> = function ({ userInfo, messageData: initMsgD
   );
 };
 
+function resolveBaseUrl(): string {
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  const protocol = process.env.PROTOCOL || 'http';
+  const host = process.env.HOST || 'localhost';
+  const port = process.env.PORT || '3000';
+  return `${protocol}://${host}${process.env.NODE_ENV === 'development' ? `:${port}` : ''}`;
+}
+
 export const getServerSideProps: GetServerSideProps<Props> = async ({ query }) => {
   const { screenName, messageId } = query;
-  console.log(screenName);
-  if (screenName === undefined) {
-    return {
-      props: {
-        userInfo: null,
-        messageData: null,
-        screenName: '',
-        baseUrl: '',
-      },
-    };
+  const baseUrl = resolveBaseUrl();
+  const emptyProps = { userInfo: null, messageData: null, screenName: '', baseUrl };
+  if (screenName === undefined || messageId === undefined) {
+    return { props: emptyProps };
   }
-
-  if (messageId === undefined) {
-    return {
-      props: {
-        userInfo: null,
-        messageData: null,
-        screenName: '',
-        baseUrl: '',
-      },
-    };
-  }
-
+  const screenNameToStr = Array.isArray(screenName) ? screenName[0] : screenName;
+  const messageIdToStr = Array.isArray(messageId) ? messageId[0] : messageId;
   try {
-    const protocol = process.env.PROTOCOL || 'http';
-    const host = process.env.HOST || 'localhost';
-    const port = process.env.PORT || '3000';
-
-    const baseUrl = `${protocol}://${host}${process.env.NODE_ENV === 'development' ? `:${port}` : ''}`;
-    console.log(baseUrl);
-    const userInfoResp: AxiosResponse<InAuthUser> = await axios(`${baseUrl}/api/user.info/${screenName}`);
-
-    const screenNameToStr = Array.isArray(screenName) ? screenName[0] : screenName;
-    if (userInfoResp.status !== 200 || userInfoResp.data === undefined || userInfoResp.data.uid === undefined) {
-      return {
-        props: {
-          userInfo: null,
-          messageData: null,
-          screenName: screenNameToStr,
-          baseUrl,
-        },
-      };
+    const userInfo = await MemberModel.findByScreenName(screenNameToStr);
+    if (!userInfo || !userInfo.uid) {
+      return { props: { ...emptyProps, screenName: screenNameToStr } };
     }
-
-    const messageInfoResp: AxiosResponse<InMessage> = await axios(
-      `${baseUrl}/api/messages.info?uid=${userInfoResp.data.uid}&messageId=${messageId}`,
-    );
-
+    const messageData = await MessageModel.get({ uid: userInfo.uid, messageId: messageIdToStr });
     return {
       props: {
-        userInfo: userInfoResp.data,
-        messageData: messageInfoResp.status !== 200 || messageInfoResp.data === undefined ? null : messageInfoResp.data,
+        userInfo,
+        messageData: (messageData as InMessage) ?? null,
         screenName: screenNameToStr,
         baseUrl,
       },
     };
   } catch (err) {
     console.error(err);
-    return {
-      props: {
-        userInfo: null,
-        messageData: null,
-        screenName: '',
-        baseUrl: '',
-      },
-    };
+    return { props: { ...emptyProps, screenName: screenNameToStr } };
   }
 };
 
