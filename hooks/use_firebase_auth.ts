@@ -1,12 +1,13 @@
 import { GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import FirebaseClient from '@/models/firebase_client';
 
 import { InAuthUser } from '../models/in_auth_user';
 
 export default function useFirebaseAuth() {
+  const router = useRouter();
   const [authUser, setAuthUser] = useState<InAuthUser | null>(null);
-
   const [loading, setLoading] = useState(true);
 
   async function signInWithGoogle(): Promise<void> {
@@ -14,33 +15,34 @@ export default function useFirebaseAuth() {
 
     try {
       const signInResult = await signInWithPopup(FirebaseClient.getInstance().Auth, provider);
-      if (signInResult.user) {
-        console.info(signInResult.user);
-        const resp = await fetch('/api/members.add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            uid: signInResult.user.uid,
-            email: signInResult.user.email,
-            displayName: signInResult.user.displayName,
-            photoURL: signInResult.user.photoURL,
-          }),
-        });
-        console.info({ status: resp.status });
+      if (!signInResult.user) return;
+
+      await fetch('/api/members.add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: signInResult.user.uid,
+          email: signInResult.user.email,
+          displayName: signInResult.user.displayName,
+          photoURL: signInResult.user.photoURL,
+        }),
+      });
+
+      const screenName = (signInResult.user.email ?? '').replace('@gmail.com', '');
+      if (screenName) {
+        router.push(`/${screenName}`);
       }
     } catch (err) {
       console.error(err);
     }
   }
 
-  const clear = () => {
+  const signOut = async () => {
+    await FirebaseClient.getInstance().Auth.signOut();
     setAuthUser(null);
-    setLoading(true);
+    setLoading(false);
+    router.push('/');
   };
-
-  const signOut = () => FirebaseClient.getInstance().Auth.signOut().then(clear);
 
   const authStateChanged = async (authState: User | null) => {
     if (authState === null) {

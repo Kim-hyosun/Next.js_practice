@@ -1,7 +1,9 @@
 import { Avatar, Box, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList, Spacer } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/auth_user.context';
 
 const GNB = function () {
+  const router = useRouter();
   const { loading, authUser, signOut, signInWithGoogle } = useAuth();
 
   const loginBtn = (
@@ -26,7 +28,7 @@ const GNB = function () {
       <MenuList>
         <MenuItem
           onClick={() => {
-            window.location.href = `/${authUser?.email?.replace('@gmail.com', '') ?? ''}`;
+            router.push(`/${authUser?.email?.replace('@gmail.com', '') ?? ''}`);
           }}
         >
           사용자 홈으로 이동
